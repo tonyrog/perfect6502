@@ -7,7 +7,7 @@ main()
 {
 	int clk = 0;
 
-	void *state = initAndResetChip();
+	void* state = allocAndResetChip();
 
 	/* set up memory for user program */
 	init_monitor();

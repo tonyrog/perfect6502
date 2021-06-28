@@ -19,20 +19,21 @@ void
 init_monitor()
 {
 	FILE *f;
-	f = fopen("apple1basic.bin", "r");
-	fread(memory + 0xE000, 1, 4096, f);
+	int n;
+	f = fopen("apple1basic/apple1basic.bin", "r");
+	n = fread(memory + 0xE000, 1, 4096, f);
+	(void) n;
 	fclose(f);
 
 	memory[0xfffc] = 0x00;
 	memory[0xfffd] = 0xE0;
-
 }
 
 
 void
-charout(char ch) {
-	unsigned char S = readSP();
-	unsigned short a = 1 + memory[0x0100+S+1] | memory[0x0100+((S+2) & 0xFF)] << 8;
+charout(void* state, char ch) {
+	unsigned char S = readSP(state);
+	unsigned short a = 1 + (memory[0x0100+S+1] | (memory[0x0100+((S+2) & 0xFF)] << 8));
 
 	/*
 	 * Apple I BASIC prints every character received
@@ -73,37 +74,37 @@ charout(char ch) {
 }
 
 void
-handle_monitor()
+handle_monitor(void *state)
 {
-	if (readRW()) {
-		unsigned short a = readAddressBus();
+    if (readRW(state)) {
+		unsigned short a = readAddressBus(state);
 		if ((a & 0xFF1F) == 0xD010) {
 			unsigned char c = getchar();
 			if (c == 10)
 				c = 13;
 			c |= 0x80;
-			writeDataBus(c);
+			writeDataBus(state, c);
 		}
 		if ((a & 0xFF1F) == 0xD011) {
-			if (readPC() == 0xE006)
+			if (readPC(state) == 0xE006)
 				/* if the code is reading a character, we have one ready */
-				writeDataBus(0x80);
+			    writeDataBus(state, 0x80);
 			else
 				/* if the code checks for a STOP condition, nothing is pressed */
-				writeDataBus(0);
+			    writeDataBus(state, 0);
 		}
 		if ((a & 0xFF1F) == 0xD012) {
 			/* 0x80 would mean we're not yet ready to receive a character */
-			writeDataBus(0);
+		    writeDataBus(state, 0);
 		}
 	} else {
-		unsigned short a = readAddressBus();
-		unsigned char d = readDataBus();
+		unsigned short a = readAddressBus(state);
+		unsigned char d = readDataBus(state);
 		if ((a & 0xFF1F) == 0xD012) {
 			unsigned char temp8 = d & 0x7F;
 			if (temp8 == 13)
 				temp8 = 10;
-			charout(temp8);
+			charout(state, temp8);
 		}
 	}
 }
@@ -113,19 +114,19 @@ main()
 {
 	int clk = 0;
 
-	initAndResetChip();
+	void* state = allocAndResetChip();
 
 	/* set up memory for user program */
 	init_monitor();
 
 	/* emulate the 6502! */
 	for (;;) {
-		step();
+		step(state);
 		clk = !clk;
 		if (!clk)
-			handle_monitor();
+			handle_monitor(state);
 
-		chipStatus();
+		// chipStatus(state);
 		//if (!(cycle % 1000)) printf("%d\n", cycle);
 	};
 }

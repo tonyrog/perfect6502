@@ -111,22 +111,19 @@ setup_memory(uint8_t opcode)
 	memory[BRK_VECTOR] = 0x00; /* loop there */
 }
 
-void *state;
-
 void
-resetChip_test()
+resetChip_test(void* state)
 {
-	state = initAndResetChip();
+	resetChip(state);
 	for (int i = 0; i < 62; i++)
 		step(state);
-
 	cycle = -1;
 }
 
 int
 main()
 {
-	state = initAndResetChip();
+	void* state = allocAndResetChip();
 
 	for (int opcode = 0x00; opcode <= 0xFF; opcode++) {
 //	for (int opcode = 0xA9; opcode <= 0xAA; opcode++) {
@@ -137,7 +134,7 @@ main()
 		 * find out length of instruction in bytes
 		 **************************************************/
 		setup_memory(opcode);
-		resetChip_test();
+		resetChip_test(state);
 		int i;
 		for (i = 0; i < MAX_CYCLES; i++) {
 			step(state);
@@ -156,7 +153,7 @@ main()
 			 * find out length of instruction in cycles
 			 **************************************************/
 			setup_memory(opcode);
-			resetChip_test();
+			resetChip_test(state);
 			for (i = 0; i < MAX_CYCLES; i++) {
 				step(state);
 //				chipStatus();
@@ -179,7 +176,7 @@ main()
 			memory[MAGIC_8 + X_OFFSET + 1] = MAGIC_IZX >> 8;
 			memory[MAGIC_8 + 0] = MAGIC_IZY & 0xFF;
 			memory[MAGIC_8 + 1] = MAGIC_IZY >> 8;
-			resetChip_test();
+			resetChip_test(state);
 			if (data[opcode].length == 2) {
 				memory[INSTRUCTION_ADDR + 1] = MAGIC_8;
 			} else if (data[opcode].length == 3) {
@@ -222,11 +219,12 @@ main()
 						data[opcode].izy = YES;
 					else
 						is_data_access = NO;
-					if (is_data_access)
+					if (is_data_access) {
 						if (IS_READ_CYCLE)
 							data[opcode].reads = YES;
 						if (IS_WRITE_CYCLE)
 							data[opcode].writes = YES;
+					}
 				}
 			};
 
@@ -270,7 +268,7 @@ main()
 				BOOL different = NO;
 				int reads, writes;
 				uint16_t read[100], write[100], write_data[100];
-				uint8_t end_a, end_x, end_y, end_s, end_p;
+				uint8_t end_a, end_x, end_y, end_s=0, end_p=0;
 				for (int j = 0; j < sizeof(magics)/sizeof(*magics); j++) {
 					setup_memory(opcode);
 					if (data[opcode].length == 2) {
@@ -313,7 +311,7 @@ main()
 							memory[MAGIC_16] = MAGIC_DATA8;
 							break;
 					}
-					resetChip_test();
+					resetChip_test(state);
 					writes = 0;
 					reads = 0;
 					for (i = 0; i < data[opcode].cycles * 2 + 2; i++) {
@@ -464,7 +462,7 @@ main()
 						memory[MAGIC_16] = MAGIC_DATA8;
 						break;
 				}
-				resetChip_test();
+				resetChip_test(state);
 				for (i = 0; i < data[opcode].cycles * 2 + 2; i++) {
 					step(state);
 				};

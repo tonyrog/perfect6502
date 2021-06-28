@@ -648,7 +648,9 @@ for (i=0; i<255; i++) {
 			goto load_noerr;
 		} /* end if( RAM[kernal_filename]=='$' ) */
 
+		// FIXME USE?
 		savedbyte = RAM[kernal_filename+kernal_filename_len]; /* TODO possible overflow */
+		(void) savedbyte;
 		RAM[kernal_filename+kernal_filename_len] = 0;
 
 /* on directory filename chdir on it */
@@ -714,7 +716,9 @@ SAVE() {
 			A = KERN_ERR_MISSING_FILE_NAME;
 			return;
 		}
+		
 		savedbyte = RAM[kernal_filename+kernal_filename_len]; /* TODO possible overflow */
+		(void)savedbyte;
 		RAM[kernal_filename+kernal_filename_len] = 0;
 		f = fopen((char*)&RAM[kernal_filename], "wb"); /* overwrite - these are not the COMMODORE DOS semantics! */
 		if (!f) {

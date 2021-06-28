@@ -4,5 +4,7 @@
 *.orig
 *.rej
 # object files
-cbmbasic
+cbmbasic/cbmbasic
+apple1basic/apple1basic
+measure
 *.o

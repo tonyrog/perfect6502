@@ -4,6 +4,7 @@
 
 state_t *setupNodesAndTransistors(netlist_transdefs *transdefs, BOOL *node_is_pullup, nodenum_t nodes, nodenum_t transistors, nodenum_t vss, nodenum_t vcc);
 void destroyNodesAndTransistors(state_t *state);
+void resetNodesAndTransistors(state_t* state, BOOL *node_is_pullup);
 void setNode(state_t *state, nodenum_t nn, BOOL s);
 BOOL isNodeHigh(state_t *state, nodenum_t nn);
 unsigned int readNodes(state_t *state, int count, nodenum_t *nodelist);

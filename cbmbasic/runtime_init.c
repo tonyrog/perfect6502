@@ -20,8 +20,10 @@ void
 init_monitor()
 {
 	FILE *f;
+	int n;
 	f = fopen("cbmbasic/cbmbasic.bin", "r");
-	fread(memory + 0xA000, 1, 17591, f);
+	n = fread(memory + 0xA000, 1, 17591, f);
+	(void) n;
 	fclose(f);
 
 	/*

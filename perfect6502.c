@@ -163,18 +163,10 @@ step(void *state)
 	cycle++;
 }
 
-void *
-initAndResetChip()
+void*
+resetChip(void* state)
 {
-	/* set up data structures for efficient emulation */
-	nodenum_t nodes = sizeof(netlist_6502_node_is_pullup)/sizeof(*netlist_6502_node_is_pullup);
-	nodenum_t transistors = sizeof(netlist_6502_transdefs)/sizeof(*netlist_6502_transdefs);
-	void *state = setupNodesAndTransistors(netlist_6502_transdefs,
-										   netlist_6502_node_is_pullup,
-										   nodes,
-										   transistors,
-										   vss,
-										   vcc);
+//        resetNodesAndTransistors(state, netlist_6502_node_is_pullup);
 
 	setNode(state, res, 0);
 	setNode(state, clk0, 1);
@@ -195,7 +187,23 @@ initAndResetChip()
 
 	cycle = 0;
 
-	return state;
+	return state;    
+}
+
+
+void *
+allocAndResetChip()
+{
+	/* set up data structures for efficient emulation */
+	nodenum_t nodes = sizeof(netlist_6502_node_is_pullup)/sizeof(*netlist_6502_node_is_pullup);
+	nodenum_t transistors = sizeof(netlist_6502_transdefs)/sizeof(*netlist_6502_transdefs);
+	void *state = setupNodesAndTransistors(netlist_6502_transdefs,
+					       netlist_6502_node_is_pullup,
+					       nodes,
+					       transistors,
+					       vss,
+					       vcc);
+	return resetChip(state);
 }
 
 void

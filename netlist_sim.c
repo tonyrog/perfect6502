@@ -245,6 +245,12 @@ listin_count(state_t *state)
 }
 
 static inline void
+listin_clear(state_t *state)
+{
+	state->listin.count = 0;
+}
+
+static inline void
 lists_switch(state_t *state)
 {
 	list_t tmp = state->listin;
@@ -387,6 +393,7 @@ getGroupValue(state_t *state)
 		case contains_nothing:
 			return NO;
 	}
+	return NO;
 }
 
 static inline void
@@ -609,18 +616,38 @@ setupNodesAndTransistors(netlist_transdefs *transdefs, BOOL *node_is_pullup, nod
 			}
 		}
 	}
-
-#if 0 /* unnecessary - RESET will stabilize the network anyway */
-	/* all nodes are down */
-	for (nodenum_t nn = 0; nn < state->nodes; nn++) {
-		set_nodes_value(state, nn, 0);
-	}
-	/* all transistors are off */
-	for (transnum_t tn = 0; tn < state->transistors; tn++)
-	set_transistors_on(state, tn, NO);
-#endif
-
 	return state;
+}
+
+void
+resetNodesAndTransistors(state_t* state, BOOL *node_is_pullup)
+{
+    count_t i;
+    
+    memset(state->nodes_pullup, 0,
+	   WORDS_FOR_BITS(state->nodes)*sizeof(*state->nodes_pullup));
+    memset(state->nodes_pulldown, 0,
+	   WORDS_FOR_BITS(state->nodes)*sizeof(*state->nodes_pulldown));
+    memset(state->nodes_value, 0,
+	   WORDS_FOR_BITS(state->nodes)*sizeof(*state->nodes_value));
+    
+    memset(state->transistors_on, 0,
+	   WORDS_FOR_BITS(state->transistors)*sizeof(*state->transistors_on));
+
+    /* copy nodes into r/w data structure */
+    for (i = 0; i < state->nodes; i++) {
+	set_nodes_pullup(state, i, node_is_pullup[i]);
+	state->nodes_gatecount[i] = 0;
+    }
+    
+
+    listin_clear(state);
+    state->listin.list = state->list1;
+
+    listout_clear(state);
+    state->listout.list = state->list2;
+
+    group_clear(state);
 }
 
 void

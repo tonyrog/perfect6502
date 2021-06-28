@@ -2,7 +2,8 @@
 #define state_t void
 #endif
 
-extern state_t *initAndResetChip();
+extern state_t *allocAndResetChip();
+extern state_t *resetChip(state_t* state);
 extern void destroyChip(state_t *state);
 extern void step(state_t *state);
 extern void chipStatus(state_t *state);

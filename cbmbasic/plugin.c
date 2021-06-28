@@ -243,6 +243,7 @@ plugin_gone() {
 			a = get_word();
 			check_comma();
 			b = get_byte();
+			(void) b;
 			if (a==6502) {
 				printf("MICROSOFT!");
 				continue;
@@ -260,10 +261,10 @@ plugin_gone() {
 		 */
 		if (compare("\236TEM")) {
 			char s[256];
-
+			int r;
 			get_string(s);
-			system(s);
-
+			r = system(s);
+			(void) r;
 			continue;
 		}
 
